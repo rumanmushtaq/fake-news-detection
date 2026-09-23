@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="auth">
+  <aside class="auth-aside backdrop" aria-hidden="true">
+    {% include "partials/brand.html" %}
+    <div class="stack-lg">
+      <div class="stack">
+        <span class="eyebrow">{% block aside_eyebrow %}How the model reads{% endblock %}</span>
+        <h2>{% block aside_title %}Every article becomes tokens before it becomes a verdict.{% endblock %}</h2>
+        <p class="lead">{% block aside_text %}BERT splits text into WordPiece tokens, reads them in context through 12 transformer layers, and scores the result as Real or Fake.{% endblock %}</p>
+      </div>
+      <div class="panel">
+        <div class="token-stream">
+          <span class="t-special">[CLS]</span><span>officials</span><span>said</span><span>on</span><span>friday</span><span class="t-hot">shocking</span><span>!</span><span>!</span><span>you</span><span>won</span><span>'</span><span>t</span><span class="t-hot">believe</span><span>the</span><span>deficit</span><span>dead</span><span>##line</span><span class="t-special">[SEP]</span>
+        </div>
+      </div>
+    </div>
+    <p class="faint xs">Illustration of WordPiece tokenization. Your text is processed on this server only.</p>
+  </aside>
+
+  <main class="auth-main" id="main">
+    <div class="auth-main-top">
+      <a href="/" class="btn btn-ghost btn-sm">← Back to site</a>
+      {% block top_link %}{% endblock %}
+    </div>
+    <div class="auth-card">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

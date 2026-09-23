@@ -1,0 +1,106 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ record.result }} · Analysis result · Fake News BERT Audit{% endblock %}
+
+{% block content %}
+<nav class="row small anim-rise" aria-label="Breadcrumb" style="margin-bottom: var(--s-5); color: var(--text-3)">
+  <a href="/history/" class="link" style="color: var(--text-2)">History</a><span aria-hidden="true">/</span><span aria-current="page">Analysis from {{ record.timestamp|date:"M j, Y, H:i" }}</span>
+</nav>
+
+<!-- Verdict -->
+<section class="card verdict {% if record.result == 'Real' %}verdict-real{% else %}verdict-fake{% endif %} anim-rise" aria-labelledby="verdict-title">
+  {% if record.confidence_pct is not None %}
+    {% if record.result == 'Real' %}
+      {% include "partials/gauge.html" with value=record.confidence_pct color="var(--real)" aria="Confidence in Real verdict" %}
+    {% else %}
+      {% include "partials/gauge.html" with value=record.confidence_pct color="var(--fake)" aria="Confidence in Fake verdict" %}
+    {% endif %}
+  {% else %}
+    <div class="gauge" role="img" aria-label="Confidence not recorded">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="52"/></svg>
+      <div class="gauge-label"><strong>—</strong><span>not recorded</span></div>
+    </div>
+  {% endif %}
+
+  <div class="verdict-copy">
+    <div class="row">
+      <span class="eyebrow" style="color: var(--v)">Model verdict</span>
+      {% if low_confidence %}<span class="badge badge-warn" data-tip="Below {{ low_confidence_pct }}% the model is close to undecided. Treat this result as weak.">Low confidence</span>{% endif %}
+      {% if record.truncated %}<span class="badge badge-data">Truncated to 512 tokens</span>{% endif %}
+    </div>
+    <h1 id="verdict-title" class="verdict-label">{% if record.result == 'Real' %}Reads as real{% else %}Reads as fake{% endif %}</h1>
+    {% if record.confidence_pct is not None %}
+      <p class="lead">The model gives <strong style="color: var(--text)">{{ record.confidence_pct }}%</strong> probability that this text matches the writing of <strong style="color: var(--text)">{% if record.result == 'Real' %}real news{% else %}fake news{% endif %}</strong> in its training data.{% if low_confidence %} That's close to a coin flip, so check the claims yourself.{% endif %}</p>
+    {% else %}
+      <p class="lead">This analysis was saved before confidence scores were recorded, so only the label is available. Run it again for full details.</p>
+    {% endif %}
+    <div class="row" style="margin-top: var(--s-2)">
+      <a href="/detect/" class="btn btn-primary">{% include "partials/icon.html" with name="scan" %}Analyze another</a>
+      <button type="button" class="btn" data-copy="Verdict: {{ record.result }}{% if record.confidence_pct is not None %} ({{ record.confidence_pct }}% confidence){% endif %} — Fake News BERT Audit, model {{ model.id }}"><span data-copy-label>Copy summary</span></button>
+    </div>
+  </div>
+</section>
+
+<div class="result-grid">
+  <!-- Submitted text -->
+  <section class="card anim-rise anim-d1" aria-labelledby="text-title">
+    <div class="row-between" style="margin-bottom: var(--s-4)">
+      <h2 id="text-title" style="font-size: var(--fs-md)">Submitted text</h2>
+      <button type="button" class="btn btn-ghost btn-sm" data-copy="#article-text">{% include "partials/icon.html" with name="copy" %}<span data-copy-label>Copy</span></button>
+    </div>
+    <div class="article clamped" id="article-text" data-clamp>{{ record.news_text }}</div>
+    <button type="button" class="btn btn-ghost btn-sm" data-clamp-toggle="article-text" aria-expanded="false" aria-controls="article-text" style="margin-top: var(--s-3)">Show full text</button>
+    {% if record.truncated %}
+      <div class="callout callout-data" style="margin-top: var(--s-4)">
+        {% include "partials/icon.html" with name="info" %}
+        <p>This text is longer than the model's 512-token window. Only the beginning was analyzed. For long articles, try pasting the section you care about most.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- Model output -->
+  <div class="stack anim-rise anim-d2">
+    <section class="card" aria-labelledby="probs-title">
+      <h2 id="probs-title" style="font-size: var(--fs-md); margin-bottom: var(--s-4)">Class probabilities</h2>
+      {% if record.real_pct is not None %}
+        <div class="stack" style="gap: var(--s-3)">
+          <div class="prob"><span class="small">Real</span><div class="prob-track"><div class="prob-fill" style="--c: var(--real); width: {{ record.real_pct }}%" data-w="{{ record.real_pct|stringformat:'.1f' }}"></div></div><span class="prob-val">{{ record.real_pct }}%</span></div>
+          <div class="prob"><span class="small">Fake</span><div class="prob-track"><div class="prob-fill" style="--c: var(--fake); width: {{ record.fake_pct }}%" data-w="{{ record.fake_pct|stringformat:'.1f' }}"></div></div><span class="prob-val">{{ record.fake_pct }}%</span></div>
+        </div>
+        <p class="faint xs" style="margin-top: var(--s-4)">Softmax output of the classifier head. The two values add up to 100%.</p>
+      {% else %}
+        <p class="muted small">Not recorded for this analysis.</p>
+      {% endif %}
+    </section>
+
+    <section class="card" aria-labelledby="details-title">
+      <h2 id="details-title" style="font-size: var(--fs-md); margin-bottom: var(--s-4)">Analysis details</h2>
+      <dl class="facts" style="margin:0">
+        <div class="fact"><dt>Tokens analyzed</dt><dd>{% if record.token_count %}{{ record.token_count }} <small>/ 512</small>{% else %}—{% endif %}</dd></div>
+        <div class="fact"><dt>Words submitted</dt><dd>{{ record.word_count }}</dd></div>
+        <div class="fact"><dt>Inference time</dt><dd>{% if record.latency_ms is not None %}{{ record.latency_ms }} <small>ms</small>{% else %}—{% endif %}</dd></div>
+        <div class="fact"><dt>Analyzed</dt><dd style="font-size: var(--fs-sm)"><time datetime="{{ record.timestamp|date:'c' }}">{{ record.timestamp|date:"M j, Y · H:i" }}</time></dd></div>
+      </dl>
+      <p class="faint xs" style="margin-top: var(--s-4)">Model <a class="link" href="{{ model.url }}" target="_blank" rel="noopener">{{ model.id }} ↗</a></p>
+    </section>
+
+    <section class="card" aria-label="How to read this result">
+      <details class="disclosure" style="border-top: 0">
+        <summary>How to read this result</summary>
+        <div class="disclosure-body">
+          <p>The model compares the <em>style</em> of your text (tone, framing, wording, attribution) with the labeled real and fake articles it was trained on.</p>
+          <p>It does not look up facts or sources. A carefully written false story can read as real, and an unusual real one can read as fake.</p>
+          <p>Its training data is mostly US political news from 2016–2017, so it's less reliable on other topics, periods and languages.</p>
+        </div>
+      </details>
+      <details class="disclosure">
+        <summary>What confidence means</summary>
+        <div class="disclosure-body">
+          <p>Confidence is the probability the model assigns to its chosen label. Anything under {{ low_confidence_pct }}% is flagged as low confidence.</p>
+          <p>High confidence doesn't mean the verdict is right, only that the text looks very typical of one class.</p>
+        </div>
+      </details>
+    </section>
+  </div>
+</div>
+{% endblock %}

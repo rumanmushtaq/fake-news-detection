@@ -1,0 +1,86 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Overview · Fake News BERT Audit{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">Workspace</span>
+    <h1>Welcome back{% if request.session.username %}, {{ request.session.username }}{% endif %}</h1>
+    <p>{% if stats.total %}You've audited {{ stats.total }} article{{ stats.total|pluralize }} so far.{% else %}Run your first analysis to start building your history.{% endif %}</p>
+  </div>
+  <a href="/detect/" class="btn btn-primary">{% include "partials/icon.html" with name="scan" %}New analysis</a>
+</div>
+
+<div class="welcome">
+  <a href="/detect/" class="card welcome-cta card-interactive anim-rise anim-d1">
+    <div class="stack" style="gap: var(--s-3)">
+      <span class="badge badge-data" style="width: fit-content">BERT · ready</span>
+      <h2>Paste an article and get a verdict with its confidence.</h2>
+      <p class="muted" style="max-width: 48ch">Headlines, posts or full stories. The model reads up to 512 tokens, and each result is saved here.</p>
+    </div>
+    <span class="row" style="color: var(--accent); font-weight: 600">Start analyzing {% include "partials/icon.html" with name="arrow-right" %}</span>
+  </a>
+
+  <div class="card anim-rise anim-d2">
+    <div class="stack" style="gap: var(--s-5)">
+      <div class="row-between">
+        <h2 style="font-size: var(--fs-md)">Your verdict mix</h2>
+        <a href="/history/" class="link small">History</a>
+      </div>
+      {% if stats.total %}
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--s-4)">
+          <div class="stat">
+            <span class="stat-label"><span class="dot dot-real"></span>Real</span>
+            <span class="stat-value" data-count="{{ stats.real }}">{{ stats.real }}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label"><span class="dot dot-fake"></span>Fake</span>
+            <span class="stat-value" data-count="{{ stats.fake }}">{{ stats.fake }}</span>
+          </div>
+        </div>
+        <div class="split" role="img" aria-label="{{ stats.real_pct }} percent real, {{ stats.fake_pct }} percent fake">
+          {% if stats.real %}<span class="s-real" style="width: {{ stats.real_pct }}%" data-w="{{ stats.real_pct }}"></span>{% endif %}
+          {% if stats.fake %}<span class="s-fake" style="width: {{ stats.fake_pct }}%" data-w="{{ stats.fake_pct }}"></span>{% endif %}
+        </div>
+        <p class="faint xs">{% if avg_confidence %}Average model confidence: <span class="mono" style="color: var(--text-2)">{{ avg_confidence }}%</span>{% else %}Confidence is recorded for new analyses.{% endif %}</p>
+      {% else %}
+        <div class="empty" style="padding: var(--s-6) 0">
+          <span class="empty-icon">{% include "partials/icon.html" with name="chart" %}</span>
+          <p>Your Real/Fake split will show up here after your first analysis.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<section class="card card-flush anim-rise anim-d3" style="margin-top: var(--s-4)" aria-labelledby="recent-title">
+  <div class="card-head">
+    <h2 id="recent-title">Recent analyses</h2>
+    {% if recent %}<a href="/history/" class="btn btn-ghost btn-sm">View all {% include "partials/icon.html" with name="arrow-right" %}</a>{% endif %}
+  </div>
+  {% if recent %}
+    <div class="list">
+      {% for item in recent %}
+      <a class="list-item" href="{% url 'result' item.pk %}">
+        <div class="stack" style="gap: 6px; min-width: 0">
+          <span class="snippet">{{ item.news_text|truncatechars:180 }}</span>
+          <span class="meta">{% include "partials/icon.html" with name="calendar" %}<time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"M j, H:i" }}</time>{% if item.token_count %}<span class="mono">{{ item.token_count }} tokens</span>{% endif %}</span>
+        </div>
+        <div class="side">
+          <span class="badge {% if item.result == 'Real' %}badge-real{% else %}badge-fake{% endif %}">{{ item.result }}</span>
+          {% if item.confidence_pct is not None %}<span class="mono xs faint">{{ item.confidence_pct }}%</span>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty-icon">{% include "partials/icon.html" with name="file" %}</span>
+      <h3>No analyses yet</h3>
+      <p>Paste an article on the Analyze page. Your results will be listed here with their verdict and confidence.</p>
+      <a href="/detect/" class="btn btn-primary">Analyze your first article</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

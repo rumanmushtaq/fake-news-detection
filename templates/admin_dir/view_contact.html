@@ -1,0 +1,39 @@
+{% extends "layouts/admin.html" %}
+
+{% block page_title %}Messages{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">Manage</span>
+    <h1>Messages</h1>
+    <p>{{ forms|length }} message{{ forms|length|pluralize }} sent through the contact form.</p>
+  </div>
+</div>
+
+{% if forms %}
+<div class="stack anim-rise anim-d1">
+  {% for fm in forms reversed %}
+  <article class="card card-tight stack" style="gap: var(--s-3)">
+    <div class="row-between">
+      <div class="row" style="gap: 10px">
+        <span class="avatar" aria-hidden="true">{{ fm.names|slice:":1" }}</span>
+        <div class="stack" style="gap: 0">
+          <strong>{{ fm.names }}</strong>
+          <span class="faint xs">{{ fm.email|default:"no email" }}{% if fm.phone %} · {{ fm.phone }}{% endif %}</span>
+        </div>
+      </div>
+      {% if fm.email %}<button type="button" class="btn btn-ghost btn-sm" data-copy="{{ fm.email }}">{% include "partials/icon.html" with name="copy" %}<span data-copy-label>Copy email</span></button>{% endif %}
+    </div>
+    <p class="muted" style="white-space: pre-wrap; overflow-wrap: anywhere">{{ fm.desc }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty anim-rise anim-d1">
+  <span class="empty-icon">{% include "partials/icon.html" with name="message" %}</span>
+  <h3>Inbox zero</h3>
+  <p>Messages from the public contact page and the in-app support page will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

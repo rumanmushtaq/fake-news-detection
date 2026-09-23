@@ -1,0 +1,47 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Create account · Fake News BERT Audit{% endblock %}
+{% block top_link %}<span class="small muted">Have an account? <a class="link" href="/user_login/">Sign in</a></span>{% endblock %}
+{% block aside_eyebrow %}Free account{% endblock %}
+{% block aside_title %}Check articles in seconds and keep a record of every one.{% endblock %}
+{% block aside_text %}Each analysis is saved to your private history with its verdict, confidence and token count, so you can come back to it later.{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="eyebrow">Get started</span>
+  <h1>Create your account</h1>
+  <p class="muted">It takes less than a minute. No payment details needed.</p>
+</div>
+
+<form method="POST">
+  {% csrf_token %}
+  <div class="grid grid-2" style="gap: var(--s-4)">
+    <div class="field">
+      <label for="name">Full name</label>
+      <input class="input" id="name" type="text" name="name" autocomplete="name" required maxlength="89">
+    </div>
+    <div class="field">
+      <label for="username">Username</label>
+      <input class="input" id="username" type="text" name="username" autocomplete="username" required maxlength="80" pattern="\S+" title="No spaces">
+    </div>
+  </div>
+  <div class="field">
+    <label for="email">Email</label>
+    <input class="input" id="email" type="email" name="email" autocomplete="email" required maxlength="90" placeholder="you@example.com">
+    <span class="hint">Used for one-time sign-in codes. We never share it.</span>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="pw-toggle">
+      <input class="input" id="password" type="password" name="password" autocomplete="new-password" required minlength="6">
+      <button type="button" data-pw-toggle aria-label="Show password" aria-pressed="false">{% include "partials/icon.html" with name="eye" %}</button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="confirm_password">Confirm password</label>
+    <input class="input" id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" required minlength="6">
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Create account {% include "partials/icon.html" with name="arrow-right" %}</button>
+</form>
+<p class="faint xs" style="text-align:center">Already registered? <a class="link" href="/user_login/">Sign in instead</a></p>
+{% endblock %}

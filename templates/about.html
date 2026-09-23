@@ -1,0 +1,71 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Model & method · Fake News BERT Audit{% endblock %}
+{% block description %}How Fake News BERT Audit works: a bert-base-uncased model fine-tuned to classify news text as real or fake, what its confidence means, and its limits.{% endblock %}
+{% block meta %}<meta name="robots" content="index, follow">{% endblock %}
+
+{% block content %}
+<section class="section backdrop" style="padding-bottom: var(--s-12)">
+  <div class="container container-narrow stack-lg">
+    <div class="stack anim-rise">
+      <span class="eyebrow">Model &amp; method</span>
+      <h1 style="font-size: var(--fs-hero)">What the model does, and doesn't</h1>
+      <p class="lead">Fake News BERT Audit is a web app around a single, openly published classifier. Here's exactly what runs when you press <em>Analyze</em>.</p>
+    </div>
+
+    <div class="card card-flush anim-rise anim-d1">
+      <div class="card-head"><h2>Model card</h2><a class="btn btn-ghost btn-sm" href="{{ model.url }}" target="_blank" rel="noopener">Hugging Face {% include "partials/icon.html" with name="external" %}</a></div>
+      <dl class="facts" style="margin:0; border:0; border-radius:0">
+        <div class="fact"><dt>Model</dt><dd style="font-size: var(--fs-sm)">{{ model.id }}</dd></div>
+        <div class="fact"><dt>Base architecture</dt><dd style="font-size: var(--fs-sm)">{{ model.base }}</dd></div>
+        <div class="fact"><dt>Encoder layers</dt><dd>{{ model.layers }}</dd></div>
+        <div class="fact"><dt>Parameters</dt><dd>~{{ model.params }}</dd></div>
+        <div class="fact"><dt>Max input</dt><dd>{{ model.max_tokens }} <small>tokens</small></dd></div>
+        <div class="fact"><dt>Output classes</dt><dd style="font-size: var(--fs-sm)">Fake · Real</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 0">
+  <div class="container container-narrow stack-lg">
+    <article class="stack" data-reveal>
+      <h2>How a verdict is produced</h2>
+      <ol class="stack muted" style="padding-left: 1.2em; margin: 0">
+        <li><strong style="color: var(--text)">Tokenization.</strong> Your text is lower-cased and split into WordPiece tokens. The special tokens <code>[CLS]</code> and <code>[SEP]</code> mark the start and end. Anything past 512 tokens is cut off, and the result page tells you when that happens.</li>
+        <li><strong style="color: var(--text)">Encoding.</strong> Twelve transformer layers build a contextual representation of every token, looking in both directions at once.</li>
+        <li><strong style="color: var(--text)">Classification.</strong> A linear head reads the <code>[CLS]</code> vector and outputs two scores. Softmax turns them into probabilities that add up to 100%.</li>
+        <li><strong style="color: var(--text)">Verdict.</strong> The higher probability becomes the label. Its value is the confidence you see. Anything under 70% is flagged as low confidence.</li>
+      </ol>
+    </article>
+
+    <article class="stack" data-reveal>
+      <h2>Training data</h2>
+      <p class="muted">According to its model card, the classifier was fine-tuned from <code>bert-base-uncased</code> on the <a class="link" href="https://huggingface.co/datasets/Pulk17/Fake-News-Detection-dataset" target="_blank" rel="noopener">Pulk17 fake news dataset</a>. Articles labeled <em>real</em> are largely Reuters wire reports on politics and world news. Articles labeled <em>fake</em> come from sites flagged for misinformation. Most of it is US political coverage from 2016–2017.</p>
+    </article>
+
+    <div class="callout" data-reveal>
+      {% include "partials/icon.html" with name="alert" %}
+      <div class="stack" style="gap: var(--s-2)">
+        <strong>Limitations you should know</strong>
+        <ul class="muted" style="margin:0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px">
+          <li>It classifies <em>writing style</em>. It does not verify facts, check sources or read links.</li>
+          <li>A false story written in a sober wire-service style can be labeled Real, and informal real reporting can be labeled Fake.</li>
+          <li>Accuracy drops on topics, periods and languages that differ from its training data.</li>
+          <li>High confidence is not proof. It only means the text looks very typical of one class.</li>
+        </ul>
+      </div>
+    </div>
+
+    <article class="stack" data-reveal>
+      <h2>Privacy</h2>
+      <p class="muted">The model runs on the server hosting this app. Submitted text is stored in this installation's database so it can appear in your history, and is visible to its administrators. It isn't sent to any external AI service.</p>
+    </article>
+
+    <div class="row" data-reveal>
+      <a href="/detect/" class="btn btn-primary btn-lg">Try it on an article {% include "partials/icon.html" with name="arrow-right" %}</a>
+      <a href="/contact/" class="btn btn-lg">Ask a question</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

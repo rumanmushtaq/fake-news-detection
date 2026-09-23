@@ -1,0 +1,42 @@
+{% extends layout %}
+
+{% block title %}Contact · Fake News BERT Audit{% endblock %}
+
+{% block content %}
+{% if layout == "layouts/public.html" %}<section class="section backdrop"><div class="container">{% endif %}
+<div class="grid anim-rise" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: clamp(24px, 5vw, 64px); align-items: start">
+  <div class="stack">
+    <span class="eyebrow">{% if layout == "layouts/app.html" %}Support{% else %}Contact{% endif %}</span>
+    <h1>Questions, feedback or a wrong verdict?</h1>
+    <p class="lead">Send a message to the administrators of this installation. If you're reporting a result, paste the text and the verdict you got.</p>
+    <ul class="checklist" style="margin-top: var(--s-4)">
+      <li>{% include "partials/icon.html" with name="check" %}<span>Messages go to the admin console of this app.</span></li>
+      <li>{% include "partials/icon.html" with name="check" %}<span>Include your email so an admin can reply.</span></li>
+    </ul>
+  </div>
+
+  <form method="POST" class="card stack" novalidate>
+    {% csrf_token %}
+    <div class="grid grid-2" style="gap: var(--s-4)">
+      <div class="field">
+        <label for="c-name">Name</label>
+        <input class="input" id="c-name" type="text" name="name" autocomplete="name" required maxlength="30">
+      </div>
+      <div class="field">
+        <label for="c-phone">Phone <span class="faint">(optional)</span></label>
+        <input class="input" id="c-phone" type="tel" name="phone" autocomplete="tel" maxlength="10" inputmode="numeric">
+      </div>
+    </div>
+    <div class="field">
+      <label for="c-email">Email</label>
+      <input class="input" id="c-email" type="email" name="email" autocomplete="email" required maxlength="50">
+    </div>
+    <div class="field">
+      <label for="c-desc">Message</label>
+      <textarea class="textarea" id="c-desc" name="desc" required style="min-height: 150px" placeholder="How can we help?"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg">{% include "partials/icon.html" with name="mail" %}Send message</button>
+  </form>
+</div>
+{% if layout == "layouts/public.html" %}</div></section>{% endif %}
+{% endblock %}

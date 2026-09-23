@@ -1,0 +1,30 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Enter code · Fake News BERT Audit{% endblock %}
+{% block top_link %}<a class="link small" href="/user_login/">Use password instead</a>{% endblock %}
+{% block aside_eyebrow %}Passwordless{% endblock %}
+{% block aside_title %}Check your inbox. The code is on its way.{% endblock %}
+{% block aside_text %}Codes expire after 10 minutes. Can't find it? Check spam, or request a new one.{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="eyebrow">Step 2 of 2</span>
+  <h1>Enter your 6-digit code</h1>
+  <p class="muted">{% if request.session.otp_email %}We sent it to <strong style="color: var(--text)">{{ request.session.otp_email }}</strong>.{% else %}Request a code first, then enter it here.{% endif %}</p>
+</div>
+
+<form method="POST">
+  {% csrf_token %}
+  <div class="field">
+    <label for="otp">One-time code</label>
+    <input class="input otp-input" id="otp" type="text" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus placeholder="••••••" title="6 digits">
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Verify and sign in</button>
+</form>
+
+<div class="row-between small">
+  <span class="muted">Didn't get it?</span>
+  <a class="link" href="/otp_login_home/verify_otp/resend_OTP/">Send a new code</a>
+</div>
+<a class="btn btn-ghost btn-block" href="/otp_login_home/">Use a different email</a>
+{% endblock %}

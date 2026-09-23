@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{% block page_title %}Admin{% endblock %} · BERT Audit Admin{% endblock %}
+
+{% block body %}
+<div class="admin">
+  <aside class="sidebar">
+    {% include "partials/brand.html" with href="/admin_home/" %}
+    <nav class="side-nav" aria-label="Admin">
+      <span class="side-label">Monitor</span>
+      <a href="/admin_home/" {% if request.path == '/admin_home/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="home" %}Overview</a>
+      <a href="/view_stat/" {% if request.path == '/view_stat/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="chart" %}Analytics</a>
+      <a href="/news_history/" {% if request.path == '/news_history/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="file" %}Predictions</a>
+      <span class="side-label">Manage</span>
+      <a href="/view_user/" {% if request.path == '/view_user/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="users" %}Users</a>
+      <a href="/view_contact/" {% if request.path == '/view_contact/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="message" %}Messages</a>
+      <a href="/admin_registration/" {% if request.path == '/admin_registration/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="plus" %}Add admin</a>
+    </nav>
+    <div class="sidebar-foot">
+      <span class="user-chip"><span class="avatar" aria-hidden="true">{{ request.session.admin_username|slice:":1" }}</span>{{ request.session.admin_username }}</span>
+      <a href="/admin_logout/" class="btn btn-ghost btn-sm" style="justify-content:flex-start">{% include "partials/icon.html" with name="logout" %}Sign out</a>
+    </div>
+  </aside>
+
+  <div style="min-width:0">
+    <header class="topbar admin-topbar">
+      <div class="container topbar-inner">
+        {% include "partials/brand.html" with href="/admin_home/" %}
+        <div class="topbar-end">
+          <a href="/admin_logout/" class="btn btn-ghost btn-sm">Sign out</a>
+        </div>
+      </div>
+      <div class="container">
+        <nav class="nav" aria-label="Admin sections">
+          <a href="/admin_home/" {% if request.path == '/admin_home/' %}aria-current="page"{% endif %}>Overview</a>
+          <a href="/view_stat/" {% if request.path == '/view_stat/' %}aria-current="page"{% endif %}>Analytics</a>
+          <a href="/news_history/" {% if request.path == '/news_history/' %}aria-current="page"{% endif %}>Predictions</a>
+          <a href="/view_user/" {% if request.path == '/view_user/' %}aria-current="page"{% endif %}>Users</a>
+          <a href="/view_contact/" {% if request.path == '/view_contact/' %}aria-current="page"{% endif %}>Messages</a>
+          <a href="/admin_registration/" {% if request.path == '/admin_registration/' %}aria-current="page"{% endif %}>Add admin</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main" class="admin-main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

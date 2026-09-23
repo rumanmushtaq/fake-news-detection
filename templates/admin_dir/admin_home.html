@@ -1,0 +1,81 @@
+{% extends "layouts/admin.html" %}
+
+{% block page_title %}Overview{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">Admin console</span>
+    <h1>Overview</h1>
+    <p>What's happening on this installation right now.</p>
+  </div>
+  <a href="/view_stat/" class="btn">{% include "partials/icon.html" with name="chart" %}Open analytics</a>
+</div>
+
+<div class="grid grid-4 anim-rise anim-d1">
+  <a href="/view_user/" class="card card-tight card-interactive stat">
+    <span class="stat-label">{% include "partials/icon.html" with name="users" %}Users</span>
+    <span class="stat-value" data-count="{{ total_users }}">{{ total_users }}</span>
+    <span class="stat-sub">{% if banned_users %}{{ banned_users }} banned{% else %}No banned accounts{% endif %}</span>
+  </a>
+  <a href="/news_history/" class="card card-tight card-interactive stat">
+    <span class="stat-label">{% include "partials/icon.html" with name="file" %}Predictions</span>
+    <span class="stat-value" data-count="{{ stats.total }}">{{ stats.total }}</span>
+    <span class="stat-sub">All time</span>
+  </a>
+  <a href="/news_history/?result=Fake" class="card card-tight card-interactive stat">
+    <span class="stat-label"><span class="dot dot-fake"></span>Flagged fake</span>
+    <span class="stat-value">{% if stats.total %}<span data-count="{{ stats.fake_pct }}">{{ stats.fake_pct }}</span>%{% else %}—{% endif %}</span>
+    <span class="stat-sub">{{ stats.fake }} of {{ stats.total }} predictions</span>
+  </a>
+  <a href="/view_contact/" class="card card-tight card-interactive stat">
+    <span class="stat-label">{% include "partials/icon.html" with name="message" %}Messages</span>
+    <span class="stat-value" data-count="{{ messages_count }}">{{ messages_count }}</span>
+    <span class="stat-sub">From the contact form</span>
+  </a>
+</div>
+
+{% if stats.total %}
+<div class="card anim-rise anim-d2" style="margin-top: var(--s-4)">
+  <div class="row-between" style="margin-bottom: var(--s-3)">
+    <h2 style="font-size: var(--fs-md)">Verdict split</h2>
+    <span class="row small muted"><span class="row" style="gap:6px"><span class="dot dot-real"></span>Real {{ stats.real_pct }}%</span><span class="row" style="gap:6px"><span class="dot dot-fake"></span>Fake {{ stats.fake_pct }}%</span></span>
+  </div>
+  <div class="split" style="height: 12px" role="img" aria-label="{{ stats.real_pct }} percent real, {{ stats.fake_pct }} percent fake">
+    {% if stats.real %}<span class="s-real" style="width: {{ stats.real_pct }}%" data-w="{{ stats.real_pct }}"></span>{% endif %}
+    {% if stats.fake %}<span class="s-fake" style="width: {{ stats.fake_pct }}%" data-w="{{ stats.fake_pct }}"></span>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+<section class="card card-flush anim-rise anim-d3" style="margin-top: var(--s-4)" aria-labelledby="recent-title">
+  <div class="card-head">
+    <h2 id="recent-title">Latest predictions</h2>
+    <a href="/news_history/" class="btn btn-ghost btn-sm">View all {% include "partials/icon.html" with name="arrow-right" %}</a>
+  </div>
+  {% if recent %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">User</th><th scope="col">Article</th><th scope="col">Verdict</th><th scope="col">Confidence</th><th scope="col">When</th></tr></thead>
+      <tbody>
+        {% for item in recent %}
+        <tr>
+          <td><span class="row" style="gap:8px; flex-wrap:nowrap"><span class="avatar" style="width:24px;height:24px;font-size:11px">{{ item.user.username|slice:":1" }}</span>{{ item.user.username }}</span></td>
+          <td><span class="snippet">{{ item.news_text|truncatechars:140 }}</span></td>
+          <td><span class="badge {% if item.result == 'Real' %}badge-real{% else %}badge-fake{% endif %}">{{ item.result }}</span></td>
+          <td class="mono xs">{% if item.confidence_pct is not None %}{{ item.confidence_pct }}%{% else %}—{% endif %}</td>
+          <td class="faint" style="white-space:nowrap"><time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"M j, H:i" }}</time></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <span class="empty-icon">{% include "partials/icon.html" with name="file" %}</span>
+    <h3>No predictions yet</h3>
+    <p>When users analyze articles, the latest ones show up here.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

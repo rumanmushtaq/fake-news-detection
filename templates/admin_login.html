@@ -1,0 +1,35 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Admin sign in · Fake News BERT Audit{% endblock %}
+{% block top_link %}<a class="link small" href="/user_login/">User sign in</a>{% endblock %}
+{% block aside_eyebrow %}Admin console{% endblock %}
+{% block aside_title %}Monitor usage, verdicts and model confidence.{% endblock %}
+{% block aside_text %}See how the model is used, review predictions, manage users and read support messages.{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="badge badge-data" style="width: fit-content">Restricted</span>
+  <h1>Admin sign in</h1>
+  <p class="muted">For administrators of this installation only.</p>
+</div>
+
+<form method="POST">
+  {% csrf_token %}
+  <div class="field">
+    <label for="admin_username">Username or email</label>
+    <div class="input-icon">
+      {% include "partials/icon.html" with name="shield" %}
+      <input class="input" id="admin_username" type="text" name="admin_username" autocomplete="username" required autofocus>
+    </div>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="pw-toggle">
+      <input class="input" id="password" type="password" name="password" autocomplete="current-password" required>
+      <button type="button" data-pw-toggle aria-label="Show password" aria-pressed="false">{% include "partials/icon.html" with name="eye" %}</button>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in to console</button>
+</form>
+<p class="faint xs" style="text-align:center">Setting up a new installation? <a class="link" href="/admin_registration/">Create the first admin account</a></p>
+{% endblock %}

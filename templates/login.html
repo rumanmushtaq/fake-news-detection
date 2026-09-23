@@ -1,0 +1,37 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Sign in · Fake News BERT Audit{% endblock %}
+{% block top_link %}<span class="small muted">New here? <a class="link" href="/user_registration/">Create an account</a></span>{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="eyebrow">Welcome back</span>
+  <h1>Sign in to your workspace</h1>
+  <p class="muted">Your analyses and history are waiting.</p>
+</div>
+
+<form method="POST" novalidate>
+  {% csrf_token %}
+  <div class="field">
+    <label for="email">Email or username</label>
+    <div class="input-icon">
+      {% include "partials/icon.html" with name="user" %}
+      <input class="input" id="email" type="text" name="email" autocomplete="username" required autofocus placeholder="you@example.com">
+    </div>
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="pw-toggle">
+      <input class="input" id="password" type="password" name="password" autocomplete="current-password" required>
+      <button type="button" data-pw-toggle aria-label="Show password" aria-pressed="false">{% include "partials/icon.html" with name="eye" %}</button>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in {% include "partials/icon.html" with name="arrow-right" %}</button>
+</form>
+
+<div class="auth-alt">or</div>
+
+<a href="/otp_login_home/" class="btn btn-lg btn-block">{% include "partials/icon.html" with name="mail" %}Email me a one-time code</a>
+
+<p class="faint xs" style="text-align:center">Forgot your password? The email code signs you in without it.</p>
+{% endblock %}

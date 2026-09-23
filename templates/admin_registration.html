@@ -1,0 +1,52 @@
+{% extends layout %}
+
+{% block title %}Add admin · Fake News BERT Audit{% endblock %}
+{% block page_title %}Add admin{% endblock %}
+{% block aside_eyebrow %}First-time setup{% endblock %}
+{% block aside_title %}Create the first administrator for this installation.{% endblock %}
+{% block aside_text %}Once an admin exists, this page closes to the public. Only signed-in admins can add more.{% endblock %}
+
+{% block content %}
+{% if request.session.admin_username %}
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Manage</span>
+    <h1>Add an administrator</h1>
+    <p>New admins get full access to users, predictions and messages.</p>
+  </div>
+</div>
+<div class="card" style="max-width: 560px">
+{% else %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="badge badge-warn" style="width: fit-content">Setup</span>
+  <h1>Create the first admin</h1>
+  <p class="muted">This form is only available until the first admin account exists.</p>
+</div>
+<div>
+{% endif %}
+  <form method="POST" class="stack">
+    {% csrf_token %}
+    <div class="field">
+      <label for="admin_username">Username</label>
+      <input class="input" id="admin_username" type="text" name="admin_username" autocomplete="off" required maxlength="80">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input class="input" id="email" type="email" name="email" autocomplete="off" required maxlength="90">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-toggle">
+        <input class="input" id="password" type="password" name="password" autocomplete="new-password" required minlength="8">
+        <button type="button" data-pw-toggle aria-label="Show password" aria-pressed="false">{% include "partials/icon.html" with name="eye" %}</button>
+      </div>
+      <span class="hint">At least 8 characters.</span>
+    </div>
+    <div class="field">
+      <label for="confirm_password">Confirm password</label>
+      <input class="input" id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" required minlength="8">
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg {% if not request.session.admin_username %}btn-block{% endif %}">Create admin account</button>
+  </form>
+</div>
+{% endblock %}

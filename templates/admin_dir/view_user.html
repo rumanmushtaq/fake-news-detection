@@ -1,0 +1,70 @@
+{% extends "layouts/admin.html" %}
+
+{% block page_title %}Users{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">Manage</span>
+    <h1>Users</h1>
+    <p>{{ forms|length }} registered account{{ forms|length|pluralize }}. Banned users can't sign in or register again with the same email.</p>
+  </div>
+</div>
+
+<section class="card card-flush anim-rise anim-d1" aria-label="User list">
+  {% if forms %}
+  <div class="card-head">
+    <div class="input-icon" style="max-width: 320px; width: 100%">
+      {% include "partials/icon.html" with name="search" %}
+      <label for="user-filter" class="sr-only">Filter users</label>
+      <input class="input" id="user-filter" type="search" placeholder="Filter by name, username or email" data-filter-table="#user-table" data-filter-empty="#user-empty">
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="table" id="user-table">
+      <thead><tr><th scope="col">User</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for fm in forms %}
+        <tr>
+          <td>
+            <span class="row" style="gap: 10px; flex-wrap: nowrap">
+              <span class="avatar" aria-hidden="true">{{ fm.username|slice:":1" }}</span>
+              <span class="stack" style="gap: 0"><strong style="font-weight: 600">{{ fm.name }}</strong><span class="faint xs">@{{ fm.username }}</span></span>
+            </span>
+          </td>
+          <td class="muted">{{ fm.email }}</td>
+          <td>{% if fm.is_banned %}<span class="badge badge-fake">Banned</span>{% else %}<span class="badge badge-real">Active</span>{% endif %}</td>
+          <td>
+            <div class="actions">
+              {% if fm.is_banned %}
+                <form method="POST" action="/unban-user/{{ fm.id }}/">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-success btn-sm">Unban</button>
+                </form>
+              {% else %}
+                <form method="POST" action="/ban-user/{{ fm.id }}/" data-confirm="{{ fm.username }} won't be able to sign in until you unban them." data-confirm-title="Ban {{ fm.username }}?" data-confirm-ok="Ban user">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm">{% include "partials/icon.html" with name="ban" %}Ban</button>
+                </form>
+              {% endif %}
+              <form method="POST" action="/delete-user/{{ fm.id }}/" data-confirm="This permanently deletes {{ fm.username }} and all of their saved predictions. This can't be undone." data-confirm-title="Delete {{ fm.username }}?" data-confirm-ok="Delete user">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete {{ fm.username }}">{% include "partials/icon.html" with name="trash" %}</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="empty" id="user-empty" hidden><p>No users match that filter.</p></div>
+  {% else %}
+  <div class="empty">
+    <span class="empty-icon">{% include "partials/icon.html" with name="users" %}</span>
+    <h3>No users yet</h3>
+    <p>Accounts appear here once people register.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

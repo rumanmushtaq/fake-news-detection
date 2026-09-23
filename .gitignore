@@ -1,0 +1,74 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.envrc
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# IDE
+.idea/
+.vscode/
+
+# Python caches
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model files
+bert_fake_news_model/
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Datasets
+dataset/
+datasets/
+
+# OS files
+.DS_Store
+Thumbs.db

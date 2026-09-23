@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block body %}
+<header class="topbar">
+  <div class="container topbar-inner">
+    {% include "partials/brand.html" with href="/user_home/" %}
+    <nav class="nav" aria-label="Workspace">
+      <a href="/user_home/" {% if request.path == '/user_home/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="home" %}Overview</a>
+      <a href="/detect/" {% if request.path == '/detect/' or '/result/' in request.path %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="scan" %}Analyze</a>
+      <a href="/history/" {% if request.path == '/history/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="history" %}History</a>
+      <a href="/user_contact/" {% if request.path == '/user_contact/' %}aria-current="page"{% endif %}>{% include "partials/icon.html" with name="message" %}Support</a>
+      <a href="/user_logout/" class="nav-mobile-only">{% include "partials/icon.html" with name="logout" %}Sign out</a>
+    </nav>
+    <div class="topbar-end">
+      <span class="user-chip hide-mobile" title="Signed in">
+        <span class="avatar" aria-hidden="true">{{ request.session.username|default:"U"|slice:":1" }}</span>
+        {{ request.session.username|default:"Account" }}
+      </span>
+      <a href="/user_logout/" class="btn btn-ghost btn-sm hide-mobile" aria-label="Sign out">{% include "partials/icon.html" with name="logout" %}</a>
+      <button class="menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-label="Menu">{% include "partials/icon.html" with name="menu" %}</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="app-main backdrop">
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+{% endblock %}

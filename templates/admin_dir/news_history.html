@@ -1,0 +1,72 @@
+{% extends "layouts/admin.html" %}
+
+{% block page_title %}Predictions{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">Monitor</span>
+    <h1>Predictions</h1>
+    <p>Every analysis run on this installation, newest first.</p>
+  </div>
+</div>
+
+<form method="GET" class="card card-tight anim-rise anim-d1" style="margin-bottom: var(--s-4)">
+  <div class="row" style="align-items: flex-end; gap: var(--s-4)">
+    <div class="field" style="min-width: 180px">
+      <label for="f-date">Date</label>
+      <input class="input" id="f-date" type="date" name="date" value="{{ selected_date|default:'' }}">
+    </div>
+    <div class="field" style="min-width: 160px">
+      <label for="f-result">Verdict</label>
+      <select class="select input" id="f-result" name="result">
+        <option value="">All verdicts</option>
+        <option value="Real" {% if result_filter == 'Real' %}selected{% endif %}>Real</option>
+        <option value="Fake" {% if result_filter == 'Fake' %}selected{% endif %}>Fake</option>
+      </select>
+    </div>
+    <div class="row">
+      <button type="submit" class="btn btn-primary">{% include "partials/icon.html" with name="search" %}Apply</button>
+      {% if selected_date or result_filter %}<a href="/news_history/" class="btn btn-ghost">Reset</a>{% endif %}
+    </div>
+  </div>
+</form>
+
+<section class="card card-flush anim-rise anim-d2" aria-label="Predictions">
+  {% if history.object_list %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">User</th><th scope="col">Article</th><th scope="col">Verdict</th><th scope="col">Confidence</th><th scope="col">Tokens</th><th scope="col">Date</th></tr></thead>
+      <tbody>
+        {% for news in history %}
+        <tr>
+          <td style="white-space: nowrap">{{ news.user.username }}</td>
+          <td><details><summary class="snippet" style="cursor: pointer; list-style: none">{{ news.news_text|truncatechars:150 }}</summary><p class="muted small" style="margin-top: var(--s-2); white-space: pre-wrap; max-width: 70ch">{{ news.news_text }}</p></details></td>
+          <td><span class="badge {% if news.result == 'Real' %}badge-real{% else %}badge-fake{% endif %}">{{ news.result }}</span></td>
+          <td class="mono xs">{% if news.confidence_pct is not None %}{{ news.confidence_pct }}%{% else %}—{% endif %}</td>
+          <td class="mono xs">{% if news.token_count %}{{ news.token_count }}{% if news.truncated %}<span class="faint"> (cut)</span>{% endif %}{% else %}—{% endif %}</td>
+          <td class="faint" style="white-space: nowrap"><time datetime="{{ news.timestamp|date:'c' }}">{{ news.timestamp|date:"M j, Y H:i" }}</time></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if history.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Pages">
+    <span class="tnum">Page {{ history.number }} of {{ history.paginator.num_pages }} · {{ history.paginator.count }} results</span>
+    <div class="row">
+      {% if history.has_previous %}<a class="btn btn-sm" href="?page=1{% if result_filter %}&result={{ result_filter }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">« First</a><a class="btn btn-sm" href="?page={{ history.previous_page_number }}{% if result_filter %}&result={{ result_filter }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">← Newer</a>{% endif %}
+      {% if history.has_next %}<a class="btn btn-sm" href="?page={{ history.next_page_number }}{% if result_filter %}&result={{ result_filter }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">Older →</a><a class="btn btn-sm" href="?page={{ history.paginator.num_pages }}{% if result_filter %}&result={{ result_filter }}{% endif %}{% if selected_date %}&date={{ selected_date }}{% endif %}">Last »</a>{% endif %}
+    </div>
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty">
+    <span class="empty-icon">{% include "partials/icon.html" with name="file" %}</span>
+    <h3>{% if selected_date or result_filter %}No predictions match these filters{% else %}No predictions yet{% endif %}</h3>
+    <p>{% if selected_date or result_filter %}Try another date or verdict.{% else %}Predictions appear here as soon as users analyze articles.{% endif %}</p>
+    {% if selected_date or result_filter %}<a href="/news_history/" class="btn">Reset filters</a>{% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

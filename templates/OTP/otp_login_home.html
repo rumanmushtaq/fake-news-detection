@@ -1,0 +1,28 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Email sign-in · Fake News BERT Audit{% endblock %}
+{% block top_link %}<a class="link small" href="/user_login/">Use password instead</a>{% endblock %}
+{% block aside_eyebrow %}Passwordless{% endblock %}
+{% block aside_title %}A six-digit code, straight to your inbox.{% endblock %}
+{% block aside_text %}Codes expire after 10 minutes and lock after 5 wrong attempts. Each new request replaces the previous code.{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap: var(--s-2)">
+  <span class="eyebrow">Step 1 of 2</span>
+  <h1>Sign in with an email code</h1>
+  <p class="muted">Enter the email on your account and we'll send you a one-time code.</p>
+</div>
+
+<form method="POST">
+  {% csrf_token %}
+  <div class="field">
+    <label for="email">Email</label>
+    <div class="input-icon">
+      {% include "partials/icon.html" with name="mail" %}
+      <input class="input" id="email" type="email" name="email" autocomplete="email" required autofocus placeholder="you@example.com">
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Send code {% include "partials/icon.html" with name="arrow-right" %}</button>
+</form>
+<p class="faint xs" style="text-align:center">No account yet? <a class="link" href="/user_registration/">Create one</a></p>
+{% endblock %}

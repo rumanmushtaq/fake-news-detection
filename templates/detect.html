@@ -1,0 +1,79 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Analyze · Fake News BERT Audit{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">New analysis</span>
+    <h1>What would you like to check?</h1>
+    <p>Paste a headline, post or article. The model reads its writing style and returns a verdict with its confidence.</p>
+  </div>
+</div>
+
+<div class="analyzer">
+  <form method="POST" id="analyze-form" class="card anim-rise anim-d1" novalidate>
+    {% csrf_token %}
+    <div class="analyzer-input">
+      <label for="news_text" class="label" style="display:block; margin-bottom: var(--s-2)">Article text</label>
+      <textarea class="textarea" id="news_text" name="news_text" required aria-describedby="counter-help" placeholder="e.g. WASHINGTON (Reuters) - The Senate voted on Tuesday to…">{{ text|default:"" }}</textarea>
+      <div class="token-meter" aria-hidden="true"><span></span></div>
+      <div class="analyzer-toolbar">
+        <div class="counter" id="counter-help" aria-live="polite">
+          <span><b data-words>0</b> words</span>
+          <span><b data-chars>0</b> chars</span>
+          <span data-tip="Estimated. BERT splits text into sub-word tokens and reads the first 512."><b data-tokens>~0</b> / 512 tokens</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" data-clear>Clear</button>
+      </div>
+      <p class="hint" data-over hidden style="color: var(--warn); margin-top: var(--s-2)">Longer than the model's 512-token window. Only the beginning will be analyzed, and the result will say so.</p>
+    </div>
+    <div class="row-between" style="margin-top: var(--s-5)">
+      <span class="hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</span>
+      <button type="submit" class="btn btn-primary btn-lg">{% include "partials/icon.html" with name="scan" %}Analyze text</button>
+    </div>
+  </form>
+
+  <aside class="side-panel anim-rise anim-d2" aria-label="Help">
+    <div class="card card-tight stack">
+      <h2 style="font-size: var(--fs-md)">Try a sample</h2>
+      <button type="button" class="sample-btn" data-sample="sample-wire"><strong>Wire-service report</strong><span>Neutral, attributed, dateline style</span></button>
+      <button type="button" class="sample-btn" data-sample="sample-clickbait"><strong>Viral clickbait post</strong><span>All caps, urgency, no sources</span></button>
+      <p class="faint xs">Samples were written for testing. They are not real articles.</p>
+    </div>
+    <div class="card card-tight stack">
+      <h2 style="font-size: var(--fs-md)">For the best signal</h2>
+      <ul class="checklist">
+        <li>{% include "partials/icon.html" with name="check" %}<span>Paste the full text, not just a link. URLs aren't fetched.</span></li>
+        <li>{% include "partials/icon.html" with name="check" %}<span>Use English. The model was trained on English news.</span></li>
+        <li>{% include "partials/icon.html" with name="check" %}<span>Include at least a few sentences. Very short text gives weaker results.</span></li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<div hidden>
+  <p id="sample-wire">BRUSSELS (Reuters) - European Union finance ministers agreed on Friday to extend a budget deficit deadline for France by two years, giving Paris until 2017 to bring its shortfall below the EU limit of 3 percent of gross domestic product, officials said after a meeting in Luxembourg. The decision followed a recommendation by the European Commission, which said France had taken effective action but that weaker-than-expected growth had made the original target unrealistic.</p>
+  <p id="sample-clickbait">SHOCKING!!! You won't BELIEVE what the liberal media is hiding from you! Insiders just EXPOSED a secret plot that the mainstream news REFUSES to cover. Patriots are FURIOUS after this leaked video revealed the TRUTH. Watch it NOW and SHARE with everyone before it gets DELETED!!!</p>
+</div>
+
+<!-- Processing overlay: shown on submit while the server runs the model -->
+<div class="processing" id="processing" hidden role="dialog" aria-modal="true" aria-labelledby="processing-title">
+  <div class="processing-card">
+    <div class="processing-head">
+      <span class="eyebrow">Analyzing</span>
+      <h2 id="processing-title">BERT is reading your text</h2>
+      <p class="muted small" data-processing-status aria-live="polite">This usually takes a second or two.</p>
+    </div>
+    <div class="scan"><div class="token-stream"></div></div>
+    <ol class="stages">
+      <li class="stage"><span class="st-icon">{% include "partials/icon.html" with name="check" %}</span><span>Text received</span><span class="st-detail">input</span></li>
+      <li class="stage"><span class="st-icon">{% include "partials/icon.html" with name="check" %}</span><span>Tokenizing with WordPiece</span><span class="st-detail" data-token-estimate>tokens</span></li>
+      <li class="stage"><span class="st-icon">{% include "partials/icon.html" with name="check" %}</span><span>Running 12 encoder layers</span><span class="st-detail">bert-base</span></li>
+      <li class="stage"><span class="st-icon">{% include "partials/icon.html" with name="check" %}</span><span>Scoring Fake vs Real</span><span class="st-detail">softmax</span></li>
+      <li class="stage"><span class="st-icon">{% include "partials/icon.html" with name="check" %}</span><span>Saving result to your history</span><span class="st-detail">database</span></li>
+    </ol>
+    <div class="processing-foot">The stages show the pipeline's order, not live progress from the server. The result opens as soon as it's ready.</div>
+  </div>
+</div>
+{% endblock %}

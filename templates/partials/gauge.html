@@ -1,0 +1,4 @@
+<div class="gauge" data-gauge="{{ value|default:0|stringformat:'.1f' }}" style="--c: {{ color|default:'var(--data)' }}" role="img" aria-label="{{ aria|default:'Confidence' }} {{ value|default:0|floatformat:1 }} percent">
+  <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="52"/><circle class="g-fill" cx="60" cy="60" r="52" style="stroke-dasharray: {% widthratio value|default:0 100 327 %} 400"/></svg>
+  <div class="gauge-label"><strong><span data-count="{{ value|default:0|stringformat:'.1f' }}" data-decimals="1">{{ value|default:0|floatformat:1 }}</span>%</strong><span>{{ label|default:"confidence" }}</span></div>
+</div>

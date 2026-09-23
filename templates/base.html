@@ -1,0 +1,46 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Fake News BERT Audit{% endblock %}</title>
+  <meta name="description" content="{% block description %}Check whether a news article reads like real reporting or fake news. A fine-tuned BERT model returns a verdict and its confidence in about a second.{% endblock %}">
+  <meta name="theme-color" content="#0a0e17">
+  {% block meta %}<meta name="robots" content="noindex">{% endblock %}
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23182234'/%3E%3Cpath d='M11 9H8v14h3M21 9h3v14h-3' fill='none' stroke='%238ea2ff' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='16' r='3.4' fill='%23ffb547'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600&family=Onest:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=5">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  {% block body %}{% endblock %}
+
+  <div class="toasts" aria-live="polite">
+    {% for message in messages %}
+    <div class="toast" data-level="{{ message.tags|default:'info' }}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+      <span class="toast-icon" aria-hidden="true">{% if message.tags == 'success' %}✓{% elif message.tags == 'info' %}i{% else %}!{% endif %}</span>
+      <span>{{ message }}</span>
+      <button type="button" aria-label="Dismiss">×</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <dialog class="modal" id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="modal-body">
+      <h2 id="confirm-title" class="h3" style="font-size: var(--fs-lg)" data-confirm-title>Are you sure?</h2>
+      <p class="muted small" data-confirm-text></p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" data-confirm-cancel>Cancel</button>
+      <button type="button" class="btn btn-danger" data-confirm-ok>Confirm</button>
+    </div>
+  </dialog>
+
+  <script src="{% static 'js/app.js' %}?v=5" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

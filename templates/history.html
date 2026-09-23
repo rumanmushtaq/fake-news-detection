@@ -1,0 +1,98 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}History · Fake News BERT Audit{% endblock %}
+
+{% block content %}
+<div class="page-head anim-rise">
+  <div>
+    <span class="eyebrow">History</span>
+    <h1>Your analyses</h1>
+    <p>{% if stats.total %}{{ stats.total }} saved result{{ stats.total|pluralize }}. Open any one to see its full details.{% else %}Everything you analyze is saved here.{% endif %}</p>
+  </div>
+  <a href="/detect/" class="btn btn-primary">{% include "partials/icon.html" with name="scan" %}New analysis</a>
+</div>
+
+{% if stats.total %}
+<div class="row-between anim-rise anim-d1" style="margin-bottom: var(--s-4)">
+  <nav class="chip-group" aria-label="Filter by verdict">
+    <a class="chip" href="?{% if query %}q={{ query|urlencode }}{% endif %}" {% if not result_filter %}aria-current="true"{% endif %}>All <span class="count">{{ stats.total }}</span></a>
+    <a class="chip" href="?result=Real{% if query %}&q={{ query|urlencode }}{% endif %}" {% if result_filter == 'Real' %}aria-current="true"{% endif %}><span class="dot dot-real"></span>Real <span class="count">{{ stats.real }}</span></a>
+    <a class="chip" href="?result=Fake{% if query %}&q={{ query|urlencode }}{% endif %}" {% if result_filter == 'Fake' %}aria-current="true"{% endif %}><span class="dot dot-fake"></span>Fake <span class="count">{{ stats.fake }}</span></a>
+  </nav>
+  <form method="GET" role="search" style="flex: 1; max-width: 360px; min-width: 220px">
+    {% if result_filter %}<input type="hidden" name="result" value="{{ result_filter }}">{% endif %}
+    <label for="q" class="sr-only">Search your analyses</label>
+    <div class="input-icon">
+      {% include "partials/icon.html" with name="search" %}
+      <input class="input" id="q" type="search" name="q" value="{{ query }}" placeholder="Search text…">
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<section class="card card-flush anim-rise anim-d2" aria-label="Analyses">
+  {% if history.object_list %}
+    <div class="table-wrap hide-sm">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Article</th><th scope="col">Verdict</th><th scope="col">Confidence</th><th scope="col">Date</th><th scope="col"><span class="sr-only">Open</span></th></tr>
+        </thead>
+        <tbody>
+          {% for item in history %}
+          <tr>
+            <td><a href="{% url 'result' item.pk %}" class="snippet">{{ item.news_text|truncatechars:220 }}</a></td>
+            <td><span class="badge {% if item.result == 'Real' %}badge-real{% else %}badge-fake{% endif %}">{{ item.result }}</span></td>
+            <td>
+              {% if item.confidence_pct is not None %}
+                <div class="row" style="gap: 10px; flex-wrap: nowrap">
+                  <span class="minibar"><span style="--w: {{ item.confidence_pct }}%; --c: {% if item.result == 'Real' %}var(--real){% else %}var(--fake){% endif %}"></span></span>
+                  <span class="mono xs">{{ item.confidence_pct }}%</span>
+                </div>
+              {% else %}<span class="faint xs">—</span>{% endif %}
+            </td>
+            <td class="faint" style="white-space: nowrap"><time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"M j, Y" }}</time><br><span class="xs">{{ item.timestamp|date:"H:i" }}</span></td>
+            <td><a href="{% url 'result' item.pk %}" class="btn btn-ghost btn-sm" aria-label="Open result {{ item.pk }}">Open {% include "partials/icon.html" with name="arrow-right" %}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Mobile list -->
+    <div class="list" style="display: none" data-mobile-list>
+      {% for item in history %}
+      <a class="list-item" href="{% url 'result' item.pk %}">
+        <div class="stack" style="gap: 6px; min-width: 0">
+          <span class="snippet">{{ item.news_text|truncatechars:140 }}</span>
+          <span class="meta"><time datetime="{{ item.timestamp|date:'c' }}">{{ item.timestamp|date:"M j, H:i" }}</time>{% if item.confidence_pct is not None %}<span class="mono">{{ item.confidence_pct }}%</span>{% endif %}</span>
+        </div>
+        <div class="side"><span class="badge {% if item.result == 'Real' %}badge-real{% else %}badge-fake{% endif %}">{{ item.result }}</span></div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if history.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="Pages">
+      <span class="tnum">Page {{ history.number }} of {{ history.paginator.num_pages }}</span>
+      <div class="row">
+        {% if history.has_previous %}<a class="btn btn-sm" href="?page={{ history.previous_page_number }}{% if result_filter %}&result={{ result_filter }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">← Newer</a>{% endif %}
+        {% if history.has_next %}<a class="btn btn-sm" href="?page={{ history.next_page_number }}{% if result_filter %}&result={{ result_filter }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">Older →</a>{% endif %}
+      </div>
+    </nav>
+    {% endif %}
+  {% elif stats.total %}
+    <div class="empty">
+      <span class="empty-icon">{% include "partials/icon.html" with name="search" %}</span>
+      <h3>No matches</h3>
+      <p>No analyses match {% if query %}"{{ query }}"{% endif %}{% if query and result_filter %} with {% endif %}{% if result_filter %}the {{ result_filter }} filter{% endif %}.</p>
+      <a href="/history/" class="btn">Clear filters</a>
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty-icon">{% include "partials/icon.html" with name="history" %}</span>
+      <h3>Nothing here yet</h3>
+      <p>Each article you analyze is saved with its verdict, confidence and token count.</p>
+      <a href="/detect/" class="btn btn-primary">Analyze your first article</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

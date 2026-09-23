@@ -1,0 +1,261 @@
+{% extends "layouts/public.html" %}
+
+{% block title %}Fake News BERT Audit — check how a news story reads before you share it{% endblock %}
+{% block description %}Paste a headline or article and a fine-tuned BERT model tells you whether it reads like real reporting or fake news, with a confidence score. Runs on your own server.{% endblock %}
+{% block meta %}
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Fake News BERT Audit">
+  <meta property="og:description" content="A fine-tuned BERT model that flags fake-news writing, with a confidence score for every verdict.">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta name="twitter:card" content="summary">
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero backdrop" aria-labelledby="hero-title">
+  <canvas class="hero-canvas" aria-hidden="true"></canvas>
+  <div class="container hero-grid">
+    <div>
+      <span class="hero-pill anim-rise"><b>BERT</b> Fine-tuned bert-base-uncased · runs on this server</span>
+      <h1 id="hero-title" class="anim-rise anim-d1">Spot fake-news writing <span class="hl">before you share it.</span></h1>
+      <p class="lead anim-rise anim-d2">Paste a headline or an article. A fine-tuned BERT model reads up to 512 tokens and tells you whether it reads like real reporting or like fake news, with the confidence behind every verdict.</p>
+      <div class="hero-ctas anim-rise anim-d3">
+        {% if request.session.user_id %}
+          <a href="/detect/" class="btn btn-primary btn-lg">Analyze an article {% include "partials/icon.html" with name="arrow-right" %}</a>
+        {% else %}
+          <a href="/user_registration/" class="btn btn-primary btn-lg">Start analyzing, it's free {% include "partials/icon.html" with name="arrow-right" %}</a>
+        {% endif %}
+        <a href="#how-it-works" class="btn btn-lg">See how it works</a>
+      </div>
+      <ul class="trust anim-rise anim-d4" style="list-style:none; margin-bottom:0; padding-left:0">
+        <li class="trust-item">{% include "partials/icon.html" with name="cpu" %}110M-parameter transformer</li>
+        <li class="trust-item">{% include "partials/icon.html" with name="lock" %}Text never leaves this server</li>
+        <li class="trust-item">{% include "partials/icon.html" with name="gauge" %}Confidence on every verdict</li>
+      </ul>
+    </div>
+
+    <!-- Live product preview: filled from the real model via /api/sample-analysis/ -->
+    <div class="console anim-rise anim-d2" id="preview" data-src="{% url 'sample_analysis' %}" role="region" aria-labelledby="preview-title">
+      <div class="console-bar">
+        <div class="console-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span class="console-title" id="preview-title">bert-audit / live analysis</span>
+      </div>
+      <div class="console-body">
+        <div class="row-between">
+          <div class="console-tabs" role="tablist" aria-label="Sample article">
+            <button type="button" role="tab" aria-selected="true" data-sample-key="wire">Wire report</button>
+            <button type="button" role="tab" aria-selected="false" data-sample-key="clickbait">Clickbait post</button>
+          </div>
+          <span class="badge badge-plain skeleton" style="width:64px" aria-hidden="true"></span>
+          <span class="badge" data-p-label data-p-live hidden>—</span>
+        </div>
+        <p class="console-text" data-p-text aria-live="polite">BRUSSELS (Reuters) - European Union finance ministers agreed on Friday to extend a budget deficit deadline for France by two years, officials said after a meeting in Luxembourg.</p>
+        <div class="console-result">
+          <div class="gauge" data-p-gauge style="--c: var(--data)" role="img" aria-label="Model confidence">
+            <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="g-track" cx="60" cy="60" r="52"/><circle class="g-fill" cx="60" cy="60" r="52" style="stroke-dasharray: 0 400"/></svg>
+            <div class="gauge-label"><strong data-p-conf>—</strong><span>confidence</span></div>
+          </div>
+          <div class="stack" style="gap: var(--s-3)">
+            <div class="prob" data-p-real><span class="small">Real</span><div class="prob-track"><div class="prob-fill" style="--c: var(--real)"></div></div><span class="prob-val">—</span></div>
+            <div class="prob" data-p-fake><span class="small">Fake</span><div class="prob-track"><div class="prob-fill" style="--c: var(--fake)"></div></div><span class="prob-val">—</span></div>
+          </div>
+        </div>
+        <div class="console-meta" data-p-meta><span class="skeleton" style="width:60%; height:12px"></span></div>
+        <p class="console-note" data-p-note><span class="live-dot" aria-hidden="true" style="background: var(--data)"></span> Running the model on this sample…</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="section divider-top" id="how-it-works" aria-labelledby="how-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">How it works</span>
+      <h2 id="how-title">From pasted text to a verdict in four steps</h2>
+      <p>The same pipeline runs every time you click <em>Analyze</em>. Nothing is sent to a third-party API.</p>
+    </div>
+    <ol class="steps" style="list-style:none; padding:0; margin:0">
+      <li class="step" data-reveal>
+        <span class="step-num">STEP 01</span>
+        <span class="step-icon">{% include "partials/icon.html" with name="file" %}</span>
+        <h3>Paste the story</h3>
+        <p>A headline, a social post or a full article. The model sees the first 512 tokens, about 390 words.</p>
+        <span class="mono-sample">"BRUSSELS (Reuters) - European Union finance ministers…"</span>
+      </li>
+      <li class="step" data-reveal style="transition-delay: 80ms">
+        <span class="step-num">STEP 02</span>
+        <span class="step-icon">{% include "partials/icon.html" with name="tokens" %}</span>
+        <h3>Tokenize</h3>
+        <p>WordPiece breaks the text into sub-word tokens from a 30,522-entry vocabulary.</p>
+        <span class="mono-sample">[CLS] brussels ( reuters ) - european … [SEP]</span>
+      </li>
+      <li class="step" data-reveal style="transition-delay: 160ms">
+        <span class="step-num">STEP 03</span>
+        <span class="step-icon">{% include "partials/icon.html" with name="layers" %}</span>
+        <h3>Read in context</h3>
+        <p>12 transformer layers weigh every token against every other one, picking up tone, structure and wording.</p>
+        <span class="mono-sample">12 layers × 12 heads × 768 dims</span>
+      </li>
+      <li class="step" data-reveal style="transition-delay: 240ms">
+        <span class="step-num">STEP 04</span>
+        <span class="step-icon">{% include "partials/icon.html" with name="gauge" %}</span>
+        <h3>Verdict + confidence</h3>
+        <p>A classifier head scores Fake vs Real. You get the label, both probabilities and a saved record.</p>
+        <span class="mono-sample">softmax → P(fake), P(real)</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features" aria-labelledby="features-title" style="padding-top: 0">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">What you get</span>
+      <h2 id="features-title">Built for quick, honest checks</h2>
+      <p>Everything below ships in this app today.</p>
+    </div>
+    <div class="features" data-reveal>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="shield" %}</span>
+        <h3>Real / Fake verdict</h3>
+        <p>A BERT classifier fine-tuned on thousands of labeled real and fake news articles.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="gauge" %}</span>
+        <h3>Confidence you can read</h3>
+        <p>See the probability for both classes. Results under 70% confidence are flagged so you know when to dig deeper.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="tokens" %}</span>
+        <h3>Token budget, disclosed</h3>
+        <p>A live meter shows how much of your text fits in the model's 512-token window, and results say if anything was cut.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="history" %}</span>
+        <h3>Searchable history</h3>
+        <p>Every analysis is saved to your account. Filter by verdict, search the text and reopen any result.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="key" %}</span>
+        <h3>Password or email code</h3>
+        <p>Sign in with a password or a one-time code sent to your inbox, valid for 10 minutes.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">{% include "partials/icon.html" with name="chart" %}</span>
+        <h3>Admin analytics</h3>
+        <p>Usage over time, verdict mix, confidence distribution and user moderation in one console.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Technology -->
+<section class="section divider-top backdrop" aria-labelledby="tech-title">
+  <div class="container tech">
+    <div data-reveal>
+      <span class="eyebrow">Under the hood</span>
+      <h2 id="tech-title" style="margin-top: var(--s-3)">A transformer that reads style, not just headlines</h2>
+      <p class="lead" style="margin-top: var(--s-4)">BERT reads the whole passage at once, in both directions. That's how it picks up the sensational framing, loaded wording and missing attribution that separate the two kinds of writing in its training data.</p>
+      <div class="tech-list">
+        <div class="tech-item"><span class="k">01</span><div><h3>WordPiece tokenizer</h3><p>Lower-cases the text and splits rare words into known pieces, so no word is ever unknown.</p></div></div>
+        <div class="tech-item"><span class="k">02</span><div><h3>bert-base-uncased encoder</h3><p>12 layers, 768-dimensional hidden states, about 110 million parameters.</p></div></div>
+        <div class="tech-item"><span class="k">03</span><div><h3>Classification head</h3><p>Maps the [CLS] summary vector to two scores, turned into probabilities with softmax.</p></div></div>
+      </div>
+    </div>
+    <figure class="card diagram" data-reveal style="margin:0">
+      <svg viewBox="0 0 600 300" role="img" aria-label="Pipeline: article text is tokenized, passed through 12 BERT encoder layers, then a softmax head outputs Real and Fake probabilities">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" class="dg-arrow"/></marker></defs>
+        <rect x="8" y="115" width="94" height="70" rx="12" class="dg-box"/>
+        <text x="55" y="146" text-anchor="middle" class="dg-t">Article</text>
+        <text x="55" y="165" text-anchor="middle" class="dg-s">raw text</text>
+        <path d="M104 150h24" class="flow-line" marker-end="url(#arr)"/>
+        <rect x="132" y="115" width="104" height="70" rx="12" class="dg-box"/>
+        <text x="184" y="146" text-anchor="middle" class="dg-t">WordPiece</text>
+        <text x="184" y="165" text-anchor="middle" class="dg-s">≤ 512 tokens</text>
+        <path d="M238 150h24" class="flow-line" marker-end="url(#arr)"/>
+        <rect x="266" y="52" width="128" height="196" rx="14" class="dg-box dg-hot"/>
+        <text x="330" y="80" text-anchor="middle" class="dg-t">BERT encoder</text>
+        <g class="dg-layers">
+          <rect x="284" y="94" width="92" height="9" rx="3"/><rect x="284" y="108" width="92" height="9" rx="3"/><rect x="284" y="122" width="92" height="9" rx="3"/>
+          <rect x="284" y="136" width="92" height="9" rx="3"/><rect x="284" y="150" width="92" height="9" rx="3"/><rect x="284" y="164" width="92" height="9" rx="3"/>
+          <rect x="284" y="178" width="92" height="9" rx="3"/><rect x="284" y="192" width="92" height="9" rx="3"/><rect x="284" y="206" width="92" height="9" rx="3"/>
+        </g>
+        <text x="330" y="236" text-anchor="middle" class="dg-s">× 12 layers</text>
+        <path d="M396 150h22" class="flow-line" marker-end="url(#arr)"/>
+        <text x="408" y="132" text-anchor="middle" class="dg-s">[CLS]</text>
+        <rect x="422" y="115" width="74" height="70" rx="12" class="dg-box"/>
+        <text x="459" y="146" text-anchor="middle" class="dg-t">Softmax</text>
+        <text x="459" y="165" text-anchor="middle" class="dg-s">2 classes</text>
+        <path d="M498 140c16 0 14-32 28-32" class="flow-line" marker-end="url(#arr)"/>
+        <path d="M498 160c16 0 14 32 28 32" class="flow-line" marker-end="url(#arr)"/>
+        <rect x="530" y="92" width="64" height="32" rx="16" class="dg-real"/>
+        <text x="562" y="113" text-anchor="middle" class="dg-t dg-real-t">Real</text>
+        <rect x="530" y="176" width="64" height="32" rx="16" class="dg-fake"/>
+        <text x="562" y="197" text-anchor="middle" class="dg-t dg-fake-t">Fake</text>
+      </svg>
+      <figcaption class="faint xs" style="margin-top: var(--s-4)">What happens to every submission. Dashed lines show the direction data flows.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Live numbers -->
+<section class="section" aria-labelledby="numbers-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">On this server</span>
+      <h2 id="numbers-title">Live numbers, straight from the database</h2>
+      <p>Counts update with every analysis run on this installation. The model figures come from its published configuration.</p>
+    </div>
+    <div class="metrics" data-reveal>
+      <div class="metric">
+        <span class="stat-label"><span class="dot dot-accent"></span>Articles analyzed</span>
+        <span class="stat-value" data-count="{{ stats.total }}">{{ stats.total }}</span>
+        <p>{% if stats.total %}Checks run by users of this app.{% else %}None yet. Yours could be the first.{% endif %}</p>
+      </div>
+      <div class="metric">
+        <span class="stat-label"><span class="dot dot-fake"></span>Flagged as fake</span>
+        <span class="stat-value">{% if stats.total %}<span data-count="{{ stats.fake_pct }}">{{ stats.fake_pct }}</span>%{% else %}—{% endif %}</span>
+        <p>{% if stats.total %}{{ stats.fake }} of {{ stats.total }} submissions.{% else %}Shown once articles are analyzed.{% endif %}</p>
+      </div>
+      <div class="metric">
+        <span class="stat-label"><span class="dot dot-data"></span>Model parameters</span>
+        <span class="stat-value">110M</span>
+        <p>bert-base-uncased, fine-tuned for two classes.</p>
+      </div>
+      <div class="metric">
+        <span class="stat-label"><span class="dot dot-data"></span>Context window</span>
+        <span class="stat-value">512</span>
+        <p>Tokens per analysis. Longer text is truncated, and the result tells you.</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top: var(--s-6)" data-reveal>
+      {% include "partials/icon.html" with name="info" %}
+      <p><strong>Know the limits.</strong> The model judges writing patterns it learned from labeled news, mostly US politics from 2016–2017. It doesn't check facts, and it can be confidently wrong on new topics or other styles. Use it as a first signal, not a final answer. <a class="link" href="/about/">Read about the method</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top: 0" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div class="stack">
+        <span class="eyebrow">Ready when you are</span>
+        <h2 id="cta-title">Got a story that feels off? Audit it.</h2>
+        <p class="lead">Create a free account and run your first analysis in under a minute.</p>
+      </div>
+      <div class="row">
+        {% if request.session.user_id %}
+          <a href="/detect/" class="btn btn-primary btn-lg">Analyze an article {% include "partials/icon.html" with name="arrow-right" %}</a>
+        {% else %}
+          <a href="/user_registration/" class="btn btn-primary btn-lg">Create free account {% include "partials/icon.html" with name="arrow-right" %}</a>
+          <a href="/user_login/" class="btn btn-lg">Sign in</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
