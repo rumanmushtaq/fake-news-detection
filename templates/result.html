@@ -67,7 +67,7 @@
           <div class="prob"><span class="small">Real</span><div class="prob-track"><div class="prob-fill" style="--c: var(--real); width: {{ record.real_pct }}%" data-w="{{ record.real_pct|stringformat:'.1f' }}"></div></div><span class="prob-val">{{ record.real_pct }}%</span></div>
           <div class="prob"><span class="small">Fake</span><div class="prob-track"><div class="prob-fill" style="--c: var(--fake); width: {{ record.fake_pct }}%" data-w="{{ record.fake_pct|stringformat:'.1f' }}"></div></div><span class="prob-val">{{ record.fake_pct }}%</span></div>
         </div>
-        <p class="faint xs" style="margin-top: var(--s-4)">Softmax output of the classifier head. The two values add up to 100%.</p>
+        <p class="faint xs" style="margin-top: var(--s-4)">Softmax output of the classifier head. The two probabilities sum to 100%; values are rounded down, so they may show slightly less.</p>
       {% else %}
         <p class="muted small">Not recorded for this analysis.</p>
       {% endif %}

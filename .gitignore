@@ -72,3 +72,5 @@ datasets/
 # OS files
 .DS_Store
 Thumbs.db
+# collectstatic output
+staticfiles/
